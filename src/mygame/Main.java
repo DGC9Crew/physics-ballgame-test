@@ -43,7 +43,7 @@ public class Main extends SimpleApplication implements ActionListener {
     private Vector3f camDir = new Vector3f();
     private Vector3f camLeft = new Vector3f();
     Node floor_geo;
-
+    
     private boolean left = false, right = false, up = false, down = false;
     public static void main(String[] args) {
         Main app = new Main();
@@ -56,13 +56,13 @@ public class Main extends SimpleApplication implements ActionListener {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
-        // bulletAppState.getPhysicsSpace().setAccuracy(0.001f)
-        SSAOFilter ssaoFilter = new SSAOFilter(12.94 f, 43.92 f, 0.33 f, 0.61 f);
+       // bulletAppState.getPhysicsSpace().setAccuracy(0.001f)
+        SSAOFilter ssaoFilter = new SSAOFilter(12.94f, 43.92f, 0.33f, 0.61f);
         fpp.addFilter(ssaoFilter);
         setDisplayFps(false);
         setDisplayStatView(false);
         viewPort.addProcessor(fpp);
-        Box floor = new Box(20, 1, 20);
+        Box floor = new Box(20,1,20);
         /*
                 
         Geometry floor_geo = new Geometry("Floor", floor);
@@ -72,42 +72,42 @@ public class Main extends SimpleApplication implements ActionListener {
         floor_geo.setLocalTranslation(0, -0.1f, 0);
         this.rootNode.attachChild(floor_geo);
           */
-        floor_geo = (Node) assetManager.loadModel("Scenes/newScene.j3o");
+         floor_geo = (Node) assetManager.loadModel("Scenes/newScene.j3o");
         CollisionShape sceneShape
-            = CollisionShapeFactory.createMeshShape(floor_geo);
+                = CollisionShapeFactory.createMeshShape(floor_geo);
         rootNode.attachChild(floor_geo);
-        RigidBodyControl floor_phy = new RigidBodyControl(sceneShape, 0.0 f);
+        RigidBodyControl floor_phy = new RigidBodyControl(sceneShape, 0.0f);
         floor_geo.addControl(floor_phy);
         bulletAppState.getPhysicsSpace().add(floor_phy);
         floor_geo.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
-
-        Sphere sphere = new Sphere(32, 32, 0.4 f, true, false);
+        
+        Sphere sphere = new Sphere(32, 32, 0.4f, true, false);
         sphere.setTextureMode(TextureMode.Projected);
         Geometry ball_geo = new Geometry("cannon ball", sphere);
         ball_geo.setMaterial(assetManager.loadMaterial("Materials/ball.j3m"));
         rootNode.attachChild(ball_geo);
         ball_geo.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
-        ball_geo.setLocalTranslation(0, 10, 0);
-
-        ball_phy = new RigidBodyControl(1 f);
-
+        ball_geo.setLocalTranslation(0,10,0);
+        
+        ball_phy = new RigidBodyControl(1f);
+       
         ball_geo.addControl(ball_phy);
         bulletAppState.getPhysicsSpace().add(ball_phy);
         flyCam.setEnabled(false);
-        cam.setLocation(ball_phy.getPhysicsLocation().addLocal(new Vector3f(10, 10, 0)));
-
+        cam.setLocation(ball_phy.getPhysicsLocation().addLocal(new Vector3f(10,10,0)));
+        
         initKeys();
-
+        
         AmbientLight al = new AmbientLight();
-        al.setColor(ColorRGBA.White.mult(0.5 f));
+        al.setColor(ColorRGBA.White.mult(0.5f));
         rootNode.addLight(al);
-
+        
         DirectionalLight sun = new DirectionalLight();
         sun.setColor(ColorRGBA.White);
-        sun.setDirection(new Vector3f(2.8 f, -2.8 f, -2.8 f).normalizeLocal());
+        sun.setDirection(new Vector3f(2.8f, -2.8f, -2.8f).normalizeLocal());
         rootNode.addLight(sun);
-
-
+       
+        
         /* Drop shadows */
         final int SHADOWMAP_SIZE = 1024;
         DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
@@ -117,7 +117,7 @@ public class Main extends SimpleApplication implements ActionListener {
         DirectionalLightShadowFilter dlsf = new DirectionalLightShadowFilter(assetManager, SHADOWMAP_SIZE, 3);
         dlsf.setLight(sun);
         dlsf.setEnabled(true);
-        dlsr.setShadowIntensity(0.3 f);
+        dlsr.setShadowIntensity(0.3f);
         fpp.addFilter(dlsf);
         viewPort.addProcessor(fpp);
     }
@@ -128,7 +128,9 @@ public class Main extends SimpleApplication implements ActionListener {
         inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_R));
         inputManager.addListener(this, "Left");
+        inputManager.addListener(this, "Reset");
         inputManager.addListener(this, "Right");
         inputManager.addListener(this, "Up");
         inputManager.addListener(this, "Down");
@@ -136,16 +138,18 @@ public class Main extends SimpleApplication implements ActionListener {
     }
     public void onAction(String binding, boolean isPressed, float tpf) {
         if (binding.equals("Left")) {
-            left = isPressed;
+            left= isPressed;
         } else if (binding.equals("Right")) {
             right = isPressed;
         } else if (binding.equals("Up")) {
             up = isPressed;
         } else if (binding.equals("Down")) {
             down = isPressed;
-        } else if (binding.equals("Jump")) {
-            if (isPressed) {
-                //ball_phy.setLinearVelocity(ball_phy.getLinearVelocity().addLocal(new Vector3f(0,10,0)));
+        } else if (binding.equals("Reset")) {
+            if (!isPressed) {
+                ball_phy.setPhysicsLocation(new Vector3f(0,10,0));
+                ball_phy.setLinearVelocity(Vector3f.ZERO);
+                ball_phy.setAngularVelocity(Vector3f.ZERO);
             }
         }
     }
@@ -173,33 +177,33 @@ public class Main extends SimpleApplication implements ActionListener {
         if (results.size() > 0) {
             // The closest collision point is what was truly hit:
             CollisionResult closest = results.getClosestCollision();
-            if (closest.getDistance() < 1) {
+            if(closest.getDistance() < 1) {
                 ableToMove = true;
             } else {
                 ableToMove = false;
             }
-
+            
         } else {
-
-
+            
+            
         }
-
-
-
-
-
-
-
-
-
-        camDir.set(cam.getDirection()).multLocal(.5 f).setY(0);
-        camLeft.set(cam.getLeft()).multLocal(.5 f).setY(0);
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        camDir.set(cam.getDirection()).multLocal(.5f).setY(0);
+        camLeft.set(cam.getLeft()).multLocal(.5f).setY(0);
         launchDir.set(0, 0, 0);
-
-
-
-
-
+        
+        
+        
+        
+        
         boolean ifMoved = false;
         if (left) {
             launchDir.addLocal(camLeft);
@@ -217,16 +221,16 @@ public class Main extends SimpleApplication implements ActionListener {
             launchDir.addLocal(camDir.negate());
             ifMoved = true;
         }
-        if (ifMoved && ableToMove) {
+        if(ifMoved && ableToMove) {
             Vector3f newvelocity = ball_phy.getLinearVelocity().addLocal(launchDir);
-
-            if (newvelocity.x > 10) {
-                newvelocity.x = 10;
+            
+            if(newvelocity.x > 10) {
+                newvelocity.x = 10; 
             }
             if (newvelocity.x < -10) {
                 newvelocity.x = -10;
             }
-
+            
             if (newvelocity.z > 10) {
                 newvelocity.z = 10;
             }
@@ -234,14 +238,14 @@ public class Main extends SimpleApplication implements ActionListener {
                 newvelocity.z = -10;
             }
             ball_phy.setLinearVelocity(newvelocity);
-
-
+           
+            
         }
         cam.setLocation(ball_phy.getPhysicsLocation().addLocal(new Vector3f(15, 15, 0)));
         cam.lookAt(ball_phy.getPhysicsLocation(), Vector3f.UNIT_Y);
         System.out.println(ball_phy.getLinearVelocity());
-
-
+        
+       
     }
 
     @Override
