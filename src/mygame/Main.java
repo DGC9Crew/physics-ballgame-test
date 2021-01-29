@@ -150,6 +150,7 @@ public class Main extends SimpleApplication implements ActionListener {
                 ball_phy.setPhysicsLocation(new Vector3f(0,10,0));
                 ball_phy.setLinearVelocity(Vector3f.ZERO);
                 ball_phy.setAngularVelocity(Vector3f.ZERO);
+                //reset the balls phy stuff
             }
         }
     }
@@ -188,13 +189,7 @@ public class Main extends SimpleApplication implements ActionListener {
             
         }
     
-        
-        
-        
-        
-        
-        
-        
+
         
         camDir.set(cam.getDirection()).multLocal(.5f).setY(0);
         camLeft.set(cam.getLeft()).multLocal(.5f).setY(0);
